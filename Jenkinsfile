@@ -1,6 +1,13 @@
 pipeline {
     agent any
 
+    options {
+        timeout(time: 5, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
     parameters {
         string(name: 'APP_VERSION', defaultValue: '1.0.0', description: 'Version à construire')
         choice(name: 'ENVIRONNEMENT', choices: ['dev', 'recette', 'prod'], description: 'Environnement cible')
@@ -75,6 +82,21 @@ pipeline {
                         sh 'sleep 5'
                     }
                 }
+            }
+        }
+        stage('Appel service instable') {
+            options {
+                retry(3)
+                timeout(time: 30, unit: 'SECONDS')
+            }
+            steps {
+                sh '''
+                    if [ $((RANDOM % 3)) -ne 0 ]; then
+                        echo "Échec simulé"
+                        exit 1
+                    fi
+                    echo "Succès"
+                '''
             }
         }
     }
