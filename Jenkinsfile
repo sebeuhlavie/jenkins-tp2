@@ -99,5 +99,21 @@ pipeline {
                 '''
             }
         }
+        stage('Secrets') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'api-token', variable: 'API_TOKEN'),
+                    usernamePassword(credentialsId: 'deploy-creds',
+                                     usernameVariable: 'DEPLOY_USER',
+                                     passwordVariable: 'DEPLOY_PASS')
+                ]) {
+                    sh '''
+                        echo "Token utilisé : $API_TOKEN"
+                        echo "Utilisateur : $DEPLOY_USER"
+                        echo "Longueur du mot de passe : ${#DEPLOY_PASS}"
+                    '''
+                }
+            }
+        }
     }
 }
